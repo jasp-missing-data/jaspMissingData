@@ -87,8 +87,14 @@ MissingDataImputation <- function(jaspResults, dataset, options) {
   options$lmFunction <- pooledLm
 
   tmp <- options$imputationVariables
-  options$imputationTargets <- sapply(tmp, "[[", x = "variable")
-  options$imputationMethods <- sapply(tmp, "[[", x = "method")
+  if (interactive()) {
+    options$imputationTargets <- sapply(tmp$value, "[[", x = "variable")
+    options$imputationMethods <- sapply(tmp$value, "[[", x = "method")
+  } else {
+    options$imputationTargets <- sapply(tmp, "[[", x = "variable")
+    options$imputationMethods <- sapply(tmp, "[[", x = "method")
+  }
+
   names(options$imputationMethods) <- options$imputationTargets
 
   # saveRDS(vars, "~/software/jasp/modules/imputation/data/vars.rds")
@@ -103,7 +109,7 @@ MissingDataImputation <- function(jaspResults, dataset, options) {
   if(!is.null(jaspResults[["MiceMids"]])) return()
 
   miceMids <- createJaspState()
-  miceMids$dependOn(options = c("imputationTargets", "imputationMethods", "nImps", "nIter", "seed"))
+  miceMids$dependOn(options = c("imputationTargets", "imputationMethods", "visitsequence", "nImps", "nIter", "seed"))
 
   jaspResults[["MiceMids"]] <- miceMids
 }
@@ -192,6 +198,7 @@ MissingDataImputation <- function(jaspResults, dataset, options) {
         m               = nImp,
         method          = methVec,
         predictorMatrix = predMat,
+        visitSequence   = visitsequence,
         maxit           = nIter,
         seed            = seed,
         print           = FALSE
@@ -208,7 +215,8 @@ MissingDataImputation <- function(jaspResults, dataset, options) {
     # saveRDS(miceOut, "/home/kylelang/software/jasp/modules/imputation/data/miceOut.rds")
     miceMids$object          <- miceOut
     options$lastMidsUpdate   <- Sys.time()
-    options$imputedVariables <- (sapply(miceOut$imp, nrow) > 0) |> which() |> names()
+    nonnull <- !sapply(miceOut$imp, is.null)
+    options$imputedVariables <- (sapply(miceOut$imp[nonnull], nrow) > 0) |> which() |> names()
   } else {
     stop(
       "The mice() function crashed when attempting to impute the missing data.\n",

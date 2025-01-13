@@ -184,6 +184,20 @@ Form
 
 		}
 
+
+	}
+
+	DropDown
+	{
+		name: "visitsequence"
+
+		label: qsTr("Visit Sequence")
+		values: [
+			{ label: qsTr("Top to Bottom"), value: "roman"},
+			{ label: qsTr("Bottom to Top"),	value: "arabic"},
+			{ label: qsTr("Monotone"),	value: "monotone"},
+			{ label: qsTr("Reverse Monotone"),	value: "revmonotone"}
+		]
 	}
 
 	Group
